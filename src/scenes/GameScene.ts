@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, PLAYER, BULLET, ENEMY, BOSS, GRID, WEAPONS, WeaponConfig } from '../config';
+import { PLAYER, BULLET, ENEMY, BOSS, GRID, WEAPONS, WeaponConfig } from '../config';
 import { Player } from '../entities/Player';
 import { Bullet, BossBullet } from '../entities/Bullet';
 import { Enemy } from '../entities/Enemy';
@@ -75,9 +75,12 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.levelConfig = LEVELS[this.level - 1];
+    const W = this.scale.width;
+    const H = this.scale.height;
+    this.physics.world.setBounds(0, 0, W, H);
 
     // Background grid
-    this.drawGrid();
+    this.drawGrid(W, H);
 
     // Object pools
     this.bulletPool = this.physics.add.group({
@@ -99,17 +102,17 @@ export class GameScene extends Phaser.Scene {
     });
 
     // Player
-    this.player = new Player(this, GAME_WIDTH / 2, GAME_HEIGHT / 2);
+    this.player = new Player(this, W / 2, H / 2);
 
     // Virtual joysticks (enable multitouch)
     this.input.addPointer(2);
-    const halfW = GAME_WIDTH / 2;
+    const halfW = W / 2;
     this.leftStick = new VirtualJoystick(this, 0, halfW);
-    this.rightStick = new VirtualJoystick(this, halfW, GAME_WIDTH);
+    this.rightStick = new VirtualJoystick(this, halfW, W);
 
     // Reload button (right side, bottom-right corner)
-    const btnX = GAME_WIDTH - 60;
-    const btnY = GAME_HEIGHT - 55;
+    const btnX = W - 60;
+    const btnY = H - 55;
     const btnR = 36;
     this.reloadBtn = this.add.circle(btnX, btnY, btnR, 0x334466, 0.85)
       .setDepth(52).setScrollFactor(0).setInteractive();
@@ -147,12 +150,12 @@ export class GameScene extends Phaser.Scene {
     );
 
     // HUD
-    this.hud = new HUD(this, this.level);
+    this.hud = new HUD(this, this.level, W, H);
     this.hud.updateScore(this.score);
 
     // Overlay text (wave/level messages)
     this.overlay = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, '', {
+      .text(W / 2, H / 2 - 60, '', {
         fontSize: '28px',
         color: '#ffffff',
         fontFamily: 'monospace',
@@ -170,20 +173,20 @@ export class GameScene extends Phaser.Scene {
 
   // ─── Drawing ────────────────────────────────────────────
 
-  private drawGrid() {
+  private drawGrid(W: number, H: number) {
     const gfx = this.add.graphics();
     gfx.lineStyle(1, GRID.COLOR, GRID.ALPHA);
 
-    for (let x = 0; x <= GAME_WIDTH; x += GRID.SIZE) {
+    for (let x = 0; x <= W; x += GRID.SIZE) {
       gfx.beginPath();
       gfx.moveTo(x, 0);
-      gfx.lineTo(x, GAME_HEIGHT);
+      gfx.lineTo(x, H);
       gfx.strokePath();
     }
-    for (let y = 0; y <= GAME_HEIGHT; y += GRID.SIZE) {
+    for (let y = 0; y <= H; y += GRID.SIZE) {
       gfx.beginPath();
       gfx.moveTo(0, y);
-      gfx.lineTo(GAME_WIDTH, y);
+      gfx.lineTo(W, y);
       gfx.strokePath();
     }
     gfx.setDepth(0);
@@ -216,7 +219,7 @@ export class GameScene extends Phaser.Scene {
 
   private spawnEnemy() {
     const waveCfg = this.levelConfig.waves[this.currentWave];
-    const pos = randomEdgePosition(GAME_WIDTH, GAME_HEIGHT);
+    const pos = randomEdgePosition(this.scale.width, this.scale.height);
 
     let enemy = this.enemyPool.get(pos.x, pos.y) as Enemy | null;
     if (!enemy) {
@@ -231,7 +234,7 @@ export class GameScene extends Phaser.Scene {
     if (this.bossSpawned) return;
     this.bossSpawned = true;
 
-    this.boss = new Boss(this, GAME_WIDTH / 2, 80);
+    this.boss = new Boss(this, this.scale.width / 2, 80);
     this.boss.setBulletPool(this.bossBulletPool);
     this.boss.setSummonCallback(() => this.spawnEnemyForBoss());
 
@@ -267,7 +270,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private spawnEnemyForBoss() {
-    const pos = randomEdgePosition(GAME_WIDTH, GAME_HEIGHT);
+    const pos = randomEdgePosition(this.scale.width, this.scale.height);
     let enemy = this.enemyPool.get(pos.x, pos.y) as Enemy | null;
     if (!enemy) {
       enemy = new Enemy(this, pos.x, pos.y);

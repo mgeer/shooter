@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLAYER, GAME_WIDTH, GAME_HEIGHT } from '../config';
+import { PLAYER } from '../config';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   hp: number;
@@ -102,8 +102,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Clamp to world bounds (extra safety)
-    this.x = Phaser.Math.Clamp(this.x, PLAYER.RADIUS, GAME_WIDTH - PLAYER.RADIUS);
-    this.y = Phaser.Math.Clamp(this.y, PLAYER.RADIUS, GAME_HEIGHT - PLAYER.RADIUS);
+    const { width, height } = this.scene.scale;
+    this.x = Phaser.Math.Clamp(this.x, PLAYER.RADIUS, width - PLAYER.RADIUS);
+    this.y = Phaser.Math.Clamp(this.y, PLAYER.RADIUS, height - PLAYER.RADIUS);
   }
 
   destroy(fromScene?: boolean) {
