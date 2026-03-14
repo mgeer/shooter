@@ -1,5 +1,53 @@
-export const GAME_WIDTH = 800;
-export const GAME_HEIGHT = 600;
+export const GAME_WIDTH = 960;
+export const GAME_HEIGHT = 540;
+
+export interface WeaponConfig {
+  id: 'pistol' | 'shotgun' | 'smg';
+  name: string;
+  magazineSize: number;
+  reloadTime: number;   // ms
+  fireCooldown: number; // ms
+  damage: number;
+  bulletCount: number;
+  spreadAngle: number;  // radians between bullets
+  bulletColor: number;
+}
+
+export const WEAPONS: WeaponConfig[] = [
+  {
+    id: 'pistol',
+    name: '手枪',
+    magazineSize: 12,
+    reloadTime: 1200,
+    fireCooldown: 200,
+    damage: 20,
+    bulletCount: 1,
+    spreadAngle: 0,
+    bulletColor: 0xffff00,
+  },
+  {
+    id: 'shotgun',
+    name: '霰弹枪',
+    magazineSize: 6,
+    reloadTime: 2000,
+    fireCooldown: 700,
+    damage: 12,
+    bulletCount: 5,
+    spreadAngle: 0.25,
+    bulletColor: 0xff8844,
+  },
+  {
+    id: 'smg',
+    name: '冲锋枪',
+    magazineSize: 30,
+    reloadTime: 2500,
+    fireCooldown: 80,
+    damage: 8,
+    bulletCount: 1,
+    spreadAngle: 0,
+    bulletColor: 0x44ffff,
+  },
+];
 
 export const PLAYER = {
   SPEED: 200,

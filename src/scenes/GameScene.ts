@@ -1,14 +1,15 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, PLAYER, BULLET, ENEMY, BOSS, GRID } from '../config';
+import { GAME_WIDTH, GAME_HEIGHT, PLAYER, BULLET, ENEMY, BOSS, GRID, WEAPONS, WeaponConfig } from '../config';
 import { Player } from '../entities/Player';
 import { Bullet, BossBullet } from '../entities/Bullet';
 import { Enemy } from '../entities/Enemy';
 import { Boss } from '../entities/Boss';
 import { HUD } from '../ui/HUD';
+import { VirtualJoystick } from '../ui/VirtualJoystick';
 import { LEVELS, LevelConfig } from '../levels/LevelConfig';
 import { randomEdgePosition } from '../utils/math';
 
-type GameSceneData = { level: number; score: number };
+type GameSceneData = { level: number; score: number; weaponId?: string };
 
 export class GameScene extends Phaser.Scene {
   // State
@@ -32,14 +33,18 @@ export class GameScene extends Phaser.Scene {
   private enemyPool!: Phaser.Physics.Arcade.Group;
   private bossBulletPool!: Phaser.Physics.Arcade.Group;
 
-  // Input
-  private keys!: {
-    W: Phaser.Input.Keyboard.Key;
-    A: Phaser.Input.Keyboard.Key;
-    S: Phaser.Input.Keyboard.Key;
-    D: Phaser.Input.Keyboard.Key;
-  };
+  // Input — virtual joysticks
+  private leftStick!: VirtualJoystick;
+  private rightStick!: VirtualJoystick;
+  private reloadBtn!: Phaser.GameObjects.Arc;
+  private reloadBtnLabel!: Phaser.GameObjects.Text;
   private fireCooldown = 0;
+
+  // Weapon & magazine
+  private weapon!: WeaponConfig;
+  private currentAmmo = 0;
+  private isReloading = false;
+  private reloadTimer = 0;
 
   // UI
   private hud!: HUD;
@@ -63,6 +68,10 @@ export class GameScene extends Phaser.Scene {
     this.gameOver = false;
     this.fireCooldown = 0;
     this.boss = null;
+    this.weapon = WEAPONS.find(w => w.id === data?.weaponId) ?? WEAPONS[0];
+    this.currentAmmo = this.weapon.magazineSize;
+    this.isReloading = false;
+    this.reloadTimer = 0;
   }
 
   create() {
@@ -93,21 +102,24 @@ export class GameScene extends Phaser.Scene {
     // Player
     this.player = new Player(this, GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
-    // Input
-    const kb = this.input.keyboard!;
-    this.keys = {
-      W: kb.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      A: kb.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      S: kb.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      D: kb.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-    };
+    // Virtual joysticks (enable multitouch)
+    this.input.addPointer(2);
+    const halfW = GAME_WIDTH / 2;
+    this.leftStick = new VirtualJoystick(this, 0, halfW);
+    this.rightStick = new VirtualJoystick(this, halfW, GAME_WIDTH);
 
-    // Shooting on click
-    this.input.on('pointerdown', (ptr: Phaser.Input.Pointer) => {
-      if (!this.gameOver && this.fireCooldown <= 0) {
-        this.firePlayerBullet(ptr.x, ptr.y);
-        this.fireCooldown = PLAYER.FIRE_COOLDOWN;
-      }
+    // Reload button (right side, bottom-right corner)
+    const btnX = GAME_WIDTH - 60;
+    const btnY = GAME_HEIGHT - 55;
+    const btnR = 36;
+    this.reloadBtn = this.add.circle(btnX, btnY, btnR, 0x334466, 0.85)
+      .setDepth(52).setScrollFactor(0).setInteractive();
+    this.reloadBtnLabel = this.add.text(btnX, btnY, '↺', {
+      fontSize: '28px', color: '#ffffff', fontFamily: 'monospace',
+    }).setOrigin(0.5).setDepth(53).setScrollFactor(0);
+
+    this.reloadBtn.on('pointerdown', () => {
+      if (!this.gameOver) this.startReload();
     });
 
     // Colliders
@@ -310,12 +322,24 @@ export class GameScene extends Phaser.Scene {
 
   private firePlayerBullet(targetX: number, targetY: number) {
     const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, targetX, targetY);
-    const dirX = Math.cos(angle);
-    const dirY = Math.sin(angle);
+    this.firePlayerBulletByAngle(angle);
+  }
 
-    let bullet = this.bulletPool.get(this.player.x, this.player.y) as Bullet | null;
-    if (!bullet) return;
-    bullet.fire(this.player.x, this.player.y, dirX, dirY);
+  private firePlayerBulletByAngle(baseAngle: number) {
+    const { bulletCount, spreadAngle, damage, bulletColor } = this.weapon;
+    for (let i = 0; i < bulletCount; i++) {
+      const angle = baseAngle + (i - Math.floor(bulletCount / 2)) * spreadAngle;
+      const bullet = this.bulletPool.get(this.player.x, this.player.y) as Bullet | null;
+      if (!bullet) continue;
+      bullet.fire(this.player.x, this.player.y, Math.cos(angle), Math.sin(angle), damage, bulletColor);
+    }
+  }
+
+  private startReload() {
+    if (this.isReloading || this.currentAmmo === this.weapon.magazineSize) return;
+    this.isReloading = true;
+    this.reloadTimer = this.weapon.reloadTime;
+    this.showOverlay('换弹中...', this.weapon.reloadTime);
   }
 
   // ─── Collision Handlers ────────────────────────────────────
@@ -454,18 +478,57 @@ export class GameScene extends Phaser.Scene {
   update(_time: number, delta: number) {
     if (this.gameOver) return;
 
-    // Player movement
+    // Left joystick → player movement
     this.player.move({
-      up: this.keys.W.isDown,
-      down: this.keys.S.isDown,
-      left: this.keys.A.isDown,
-      right: this.keys.D.isDown,
+      up: this.leftStick.dy < -0.15,
+      down: this.leftStick.dy > 0.15,
+      left: this.leftStick.dx < -0.15,
+      right: this.leftStick.dx > 0.15,
     });
+    // Pass fractional velocity for smooth diagonal movement
+    if (this.leftStick.active) {
+      const body = this.player.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(this.leftStick.dx * PLAYER.SPEED, this.leftStick.dy * PLAYER.SPEED);
+    }
     this.player.update(delta);
-    this.player.updateAimLine(this.input.activePointer.x, this.input.activePointer.y);
+
+    // Right joystick → aim line + auto-fire
+    if (this.rightStick.active) {
+      const aimX = this.player.x + this.rightStick.dx * 100;
+      const aimY = this.player.y + this.rightStick.dy * 100;
+      this.player.updateAimLine(aimX, aimY);
+
+      // Auto-fire
+      if (this.fireCooldown <= 0 && !this.isReloading && !this.gameOver) {
+        if (this.currentAmmo <= 0) {
+          this.startReload();
+        } else {
+          this.firePlayerBulletByAngle(Math.atan2(this.rightStick.dy, this.rightStick.dx));
+          this.currentAmmo--;
+          this.fireCooldown = this.weapon.fireCooldown;
+          if (this.currentAmmo <= 0) this.startReload();
+        }
+      }
+    }
 
     // Fire cooldown
     if (this.fireCooldown > 0) this.fireCooldown -= delta;
+
+    // Reload countdown
+    if (this.isReloading) {
+      this.reloadTimer -= delta;
+      this.hud.updateReload(1 - this.reloadTimer / this.weapon.reloadTime);
+      this.reloadBtn.setFillStyle(0x222233, 0.5);
+      if (this.reloadTimer <= 0) {
+        this.isReloading = false;
+        this.currentAmmo = this.weapon.magazineSize;
+        this.hud.updateReload(-1);
+        this.reloadBtn.setFillStyle(0x334466, 0.85);
+      }
+    }
+
+    // Ammo HUD
+    this.hud.updateAmmo(this.currentAmmo, this.weapon.magazineSize);
 
     // Wave spawning
     if (this.waveActive && !this.betweenWaves) {

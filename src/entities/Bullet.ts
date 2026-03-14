@@ -9,10 +9,12 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.damage = BULLET.DAMAGE;
   }
 
-  fire(x: number, y: number, dirX: number, dirY: number) {
+  fire(x: number, y: number, dirX: number, dirY: number, damage?: number, color?: number) {
     this.setActive(true);
     this.setVisible(true);
     this.setPosition(x, y);
+    if (damage !== undefined) this.damage = damage;
+    if (color !== undefined) this.setTint(color);
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.reset(x, y);
     body.setVelocity(dirX * BULLET.SPEED, dirY * BULLET.SPEED);

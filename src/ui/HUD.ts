@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, PLAYER } from '../config';
+import { GAME_WIDTH, GAME_HEIGHT, PLAYER } from '../config';
 import { HealthBar } from './HealthBar';
 
 export class HUD {
@@ -13,35 +13,53 @@ export class HUD {
   private bossMaxHp = 600;
   private bossHpVisible = false;
 
+  // Ammo
+  private ammoText: Phaser.GameObjects.Text;
+  private reloadBg: Phaser.GameObjects.Rectangle;
+  private reloadBar: Phaser.GameObjects.Rectangle;
+  private readonly RELOAD_BAR_W = 120;
+
   constructor(scene: Phaser.Scene, level: number) {
-    // Player HP bar (bottom-left)
-    this.hpLabel = scene.add.text(10, 570, 'HP', {
-      fontSize: '12px', color: '#aaaaaa', fontFamily: 'monospace',
+    // Player HP bar (bottom-left) — above joystick area
+    this.hpLabel = scene.add.text(10, GAME_HEIGHT - 44, 'HP', {
+      fontSize: '18px', color: '#aaaaaa', fontFamily: 'monospace',
     }).setScrollFactor(0).setDepth(10);
 
-    this.playerHpBar = new HealthBar(scene, 30, 575, 140, 10, PLAYER.MAX_HP, 0x44ff44, 0xff4444);
+    this.playerHpBar = new HealthBar(scene, 38, GAME_HEIGHT - 36, 180, 14, PLAYER.MAX_HP, 0x44ff44, 0xff4444);
 
     // Score (top-right)
-    this.scoreText = scene.add.text(GAME_WIDTH - 10, 10, 'SCORE: 0', {
-      fontSize: '16px', color: '#ffcc44', fontFamily: 'monospace',
+    this.scoreText = scene.add.text(GAME_WIDTH - 12, 10, 'SCORE: 0', {
+      fontSize: '22px', color: '#ffcc44', fontFamily: 'monospace',
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(10);
 
     // Level (top-left)
-    this.levelText = scene.add.text(10, 10, `LEVEL ${level}`, {
-      fontSize: '16px', color: '#aaaaff', fontFamily: 'monospace',
+    this.levelText = scene.add.text(12, 10, `LEVEL ${level}`, {
+      fontSize: '22px', color: '#aaaaff', fontFamily: 'monospace',
     }).setScrollFactor(0).setDepth(10);
 
     // Boss HP bar (top-center, hidden by default)
-    this.bossLabel = scene.add.text(GAME_WIDTH / 2, 12, 'BOSS', {
-      fontSize: '14px', color: '#ff8800', fontFamily: 'monospace', fontStyle: 'bold',
+    this.bossLabel = scene.add.text(GAME_WIDTH / 2, 14, 'BOSS', {
+      fontSize: '18px', color: '#ff8800', fontFamily: 'monospace', fontStyle: 'bold',
     }).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(10).setVisible(false);
 
-    this.bossHpBar = new HealthBar(scene, GAME_WIDTH / 2 - 150, 28, 300, 18, 600, 0xff4400, 0xcc0000);
+    this.bossHpBar = new HealthBar(scene, GAME_WIDTH / 2 - 180, 32, 360, 22, 600, 0xff4400, 0xcc0000);
     this.bossHpBar.setVisible(false);
 
-    this.bossHpText = scene.add.text(GAME_WIDTH / 2, 28, '', {
-      fontSize: '11px', color: '#ffffff', fontFamily: 'monospace',
+    this.bossHpText = scene.add.text(GAME_WIDTH / 2, 32, '', {
+      fontSize: '14px', color: '#ffffff', fontFamily: 'monospace',
     }).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(12).setVisible(false);
+
+    // Ammo display (bottom-center-right) — leave right corner for reload button
+    this.ammoText = scene.add.text(GAME_WIDTH - 120, GAME_HEIGHT - 44, '12 / 12', {
+      fontSize: '20px', color: '#ffdd88', fontFamily: 'monospace', fontStyle: 'bold',
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(10);
+
+    // Reload progress bar (above ammo text)
+    const rx = GAME_WIDTH - 120 - this.RELOAD_BAR_W / 2;
+    this.reloadBg = scene.add.rectangle(rx, GAME_HEIGHT - 18, this.RELOAD_BAR_W, 10, 0x333333)
+      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(10).setVisible(false);
+    this.reloadBar = scene.add.rectangle(rx, GAME_HEIGHT - 18, 0, 10, 0xffaa00)
+      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(11).setVisible(false);
   }
 
   updatePlayerHp(hp: number) {
@@ -73,6 +91,22 @@ export class HUD {
     this.bossHpText.setText(`${clamped} / ${this.bossMaxHp}`);
   }
 
+  updateAmmo(current: number, max: number) {
+    this.ammoText.setText(`${current} / ${max}`);
+  }
+
+  /** progress: 0~1 = reloading, -1 = hide */
+  updateReload(progress: number) {
+    if (progress < 0) {
+      this.reloadBg.setVisible(false);
+      this.reloadBar.setVisible(false);
+    } else {
+      this.reloadBg.setVisible(true);
+      this.reloadBar.setVisible(true);
+      this.reloadBar.width = Math.max(1, this.RELOAD_BAR_W * progress);
+    }
+  }
+
   hideBossBar() {
     this.bossHpVisible = false;
     this.bossLabel.setVisible(false);
@@ -88,5 +122,8 @@ export class HUD {
     this.hpLabel.destroy();
     this.bossLabel.destroy();
     this.bossHpText.destroy();
+    this.ammoText.destroy();
+    this.reloadBg.destroy();
+    this.reloadBar.destroy();
   }
 }
