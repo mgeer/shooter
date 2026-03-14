@@ -503,6 +503,8 @@ export class GameScene extends Phaser.Scene {
           if (this.currentAmmo <= 0) this.startReload();
         }
       }
+    } else {
+      this.player.clearAimLine();
     }
 
     // Fire cooldown

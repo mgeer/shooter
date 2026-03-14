@@ -50,6 +50,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.hp <= 0;
   }
 
+  clearAimLine() {
+    this.aimLine.clear();
+  }
+
   updateAimLine(targetX: number, targetY: number) {
     this.aimLine.clear();
 
