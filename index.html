@@ -21,7 +21,6 @@
       #game {
         position: fixed;
         top: 0; left: 0;
-        width: 100%; height: 100%;
       }
       canvas { display: block; touch-action: none; }
 
@@ -53,6 +52,12 @@
     </div>
     <script type="module" src="/src/main.ts"></script>
     <script>
+      function fitGame() {
+        var el = document.getElementById('game');
+        el.style.width = window.innerWidth + 'px';
+        el.style.height = window.innerHeight + 'px';
+      }
+      fitGame();
       // 旋转到横屏时重新加载，确保游戏以正确尺寸初始化
       window.addEventListener('orientationchange', function () {
         setTimeout(function () {
