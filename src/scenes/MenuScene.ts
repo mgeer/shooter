@@ -17,32 +17,32 @@ export class MenuScene extends Phaser.Scene {
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x111122);
 
     // Title
-    this.add.text(GAME_WIDTH / 2, 50, '🔫 TOP-DOWN SHOOTER', {
-      fontSize: '36px',
+    this.add.text(GAME_WIDTH / 2, 34, '🔫 TOP-DOWN SHOOTER', {
+      fontSize: '30px',
       color: '#44ff44',
       fontFamily: 'monospace',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 96, '左摇杆移动  |  右摇杆瞄准+射击  |  ↺ 换弹', {
-      fontSize: '16px',
+    this.add.text(GAME_WIDTH / 2, 72, '左摇杆移动  |  右摇杆瞄准+射击  |  ↺ 换弹', {
+      fontSize: '14px',
       color: '#666688',
       fontFamily: 'monospace',
     }).setOrigin(0.5);
 
     // Weapon select label
-    this.add.text(GAME_WIDTH / 2, 134, '选择武器', {
-      fontSize: '20px',
+    this.add.text(GAME_WIDTH / 2, 104, '选择武器', {
+      fontSize: '18px',
       color: '#aaaaff',
       fontFamily: 'monospace',
     }).setOrigin(0.5);
 
     // Weapon cards — 3 cards centered
-    const cardW = 240;
-    const cardH = 220;
-    const cardSpacing = 260;
+    const cardW = 230;
+    const cardH = 200;
+    const cardSpacing = 250;
     const startX = GAME_WIDTH / 2 - cardSpacing;
-    const cardY = 270;
+    const cardY = 248;
 
     WEAPONS.forEach((weapon, i) => {
       const x = startX + i * cardSpacing;
@@ -53,7 +53,7 @@ export class MenuScene extends Phaser.Scene {
     this.refreshCards();
 
     // Start button — tall enough for finger tap
-    const startBtn = this.add.text(GAME_WIDTH / 2, 430, '[ START GAME ]', {
+    const startBtn = this.add.text(GAME_WIDTH / 2, 390, '[ START GAME ]', {
       fontSize: '32px',
       color: '#ffffff',
       fontFamily: 'monospace',
