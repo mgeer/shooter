@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { BULLET, GAME_WIDTH, GAME_HEIGHT } from '../config';
+import { BULLET } from '../config';
 
 export class Bullet extends Phaser.Physics.Arcade.Sprite {
   damage: number;
@@ -23,10 +23,8 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
 
   update() {
     // Out of world bounds — deactivate
-    if (
-      this.x < -20 || this.x > GAME_WIDTH + 20 ||
-      this.y < -20 || this.y > GAME_HEIGHT + 20
-    ) {
+    const { width, height } = this.scene.scale;
+    if (this.x < -20 || this.x > width + 20 || this.y < -20 || this.y > height + 20) {
       this.deactivate();
     }
   }
@@ -60,10 +58,8 @@ export class BossBullet extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
-    if (
-      this.x < -30 || this.x > GAME_WIDTH + 30 ||
-      this.y < -30 || this.y > GAME_HEIGHT + 30
-    ) {
+    const { width, height } = this.scene.scale;
+    if (this.x < -30 || this.x > width + 30 || this.y < -30 || this.y > height + 30) {
       this.deactivate();
     }
   }
