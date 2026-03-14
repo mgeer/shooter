@@ -17,7 +17,7 @@ export class MenuScene extends Phaser.Scene {
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x111122);
 
     // Title
-    this.add.text(GAME_WIDTH / 2, 34, '🔫 TOP-DOWN SHOOTER', {
+    this.add.text(GAME_WIDTH / 2, 34, '🔫 乱打一通', {
       fontSize: '30px',
       color: '#44ff44',
       fontFamily: 'monospace',
