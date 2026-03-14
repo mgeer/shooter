@@ -113,7 +113,7 @@ export class GameScene extends Phaser.Scene {
     const btnR = 36;
     this.reloadBtn = this.add.circle(btnX, btnY, btnR, 0x334466, 0.85)
       .setDepth(52).setScrollFactor(0).setInteractive();
-    this.reloadBtnLabel = this.add.text(btnX, btnY, '↺', {
+    this.add.text(btnX, btnY, '↺', {
       fontSize: '28px', color: '#ffffff', fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(53).setScrollFactor(0);
 
