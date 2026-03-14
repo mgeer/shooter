@@ -19,23 +19,35 @@ export class HUD {
   private reloadBar: Phaser.GameObjects.Rectangle;
   private readonly RELOAD_BAR_W = 120;
 
-  constructor(scene: Phaser.Scene, level: number, W: number, H: number) {
-    // Player HP bar (bottom-left) — above joystick area
-    this.hpLabel = scene.add.text(10, H - 44, 'HP', {
+  constructor(scene: Phaser.Scene, level: number, W: number, _H: number) {
+    // Level (top-left, row 1)
+    this.levelText = scene.add.text(12, 10, `LEVEL ${level}`, {
+      fontSize: '22px', color: '#aaaaff', fontFamily: 'monospace',
+    }).setScrollFactor(0).setDepth(10);
+
+    // HP bar (top-left, row 2)
+    this.hpLabel = scene.add.text(10, 38, 'HP', {
       fontSize: '18px', color: '#aaaaaa', fontFamily: 'monospace',
     }).setScrollFactor(0).setDepth(10);
 
-    this.playerHpBar = new HealthBar(scene, 38, H - 36, 180, 14, PLAYER.MAX_HP, 0x44ff44, 0xff4444);
+    this.playerHpBar = new HealthBar(scene, 38, 46, 180, 14, PLAYER.MAX_HP, 0x44ff44, 0xff4444);
 
-    // Score (top-right)
+    // Score (top-right, row 1)
     this.scoreText = scene.add.text(W - 12, 10, 'SCORE: 0', {
       fontSize: '22px', color: '#ffcc44', fontFamily: 'monospace',
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(10);
 
-    // Level (top-left)
-    this.levelText = scene.add.text(12, 10, `LEVEL ${level}`, {
-      fontSize: '22px', color: '#aaaaff', fontFamily: 'monospace',
-    }).setScrollFactor(0).setDepth(10);
+    // Ammo (top-right, row 2)
+    this.ammoText = scene.add.text(W - 12, 38, '12 / 12', {
+      fontSize: '20px', color: '#ffdd88', fontFamily: 'monospace', fontStyle: 'bold',
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(10);
+
+    // Reload progress bar (top-right, row 3)
+    const rx = W - 12 - this.RELOAD_BAR_W;
+    this.reloadBg = scene.add.rectangle(rx, 64, this.RELOAD_BAR_W, 10, 0x333333)
+      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(10).setVisible(false);
+    this.reloadBar = scene.add.rectangle(rx, 64, 0, 10, 0xffaa00)
+      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(11).setVisible(false);
 
     // Boss HP bar (top-center, hidden by default)
     this.bossLabel = scene.add.text(W / 2, 14, 'BOSS', {
@@ -48,18 +60,6 @@ export class HUD {
     this.bossHpText = scene.add.text(W / 2, 32, '', {
       fontSize: '14px', color: '#ffffff', fontFamily: 'monospace',
     }).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(12).setVisible(false);
-
-    // Ammo display (bottom-center-right) — leave right corner for reload button
-    this.ammoText = scene.add.text(W - 120, H - 44, '12 / 12', {
-      fontSize: '20px', color: '#ffdd88', fontFamily: 'monospace', fontStyle: 'bold',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(10);
-
-    // Reload progress bar (above ammo text)
-    const rx = W - 120 - this.RELOAD_BAR_W / 2;
-    this.reloadBg = scene.add.rectangle(rx, H - 18, this.RELOAD_BAR_W, 10, 0x333333)
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(10).setVisible(false);
-    this.reloadBar = scene.add.rectangle(rx, H - 18, 0, 10, 0xffaa00)
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(11).setVisible(false);
   }
 
   updatePlayerHp(hp: number) {

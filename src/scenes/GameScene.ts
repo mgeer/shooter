@@ -110,10 +110,10 @@ export class GameScene extends Phaser.Scene {
     this.leftStick = new VirtualJoystick(this, 0, halfW);
     this.rightStick = new VirtualJoystick(this, halfW, W);
 
-    // Reload button (right side, bottom-right corner)
-    const btnX = W - 60;
-    const btnY = H - 55;
-    const btnR = 36;
+    // Reload button (top-right corner, above ammo display)
+    const btnX = W - 30;
+    const btnY = 42;
+    const btnR = 28;
     this.reloadBtn = this.add.circle(btnX, btnY, btnR, 0x334466, 0.85)
       .setDepth(52).setScrollFactor(0).setInteractive();
     this.add.text(btnX, btnY, '↺', {
