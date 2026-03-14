@@ -242,6 +242,15 @@ export class GameScene extends Phaser.Scene {
       this
     );
 
+    // Boss body vs player
+    this.physics.add.overlap(
+      this.boss,
+      this.player,
+      this.onBossBodyHitPlayer as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      undefined,
+      this
+    );
+
     this.hud.showBossBar(BOSS.MAX_HP);
     this.showOverlay('BOSS FIGHT!');
   }
@@ -385,6 +394,20 @@ export class GameScene extends Phaser.Scene {
       this.hud.updatePlayerHp(this.player.hp);
       enemy.deactivate();
       this.enemiesRemainingInWave--;
+      if (this.player.isDead()) this.triggerGameOver();
+    }
+  }
+
+  private onBossBodyHitPlayer(
+    _obj1: Phaser.GameObjects.GameObject,
+    _obj2: Phaser.GameObjects.GameObject
+  ) {
+    if (!this.boss || !this.boss.active || !this.player.active) return;
+
+    const damaged = this.player.takeDamage(BOSS.BULLET_DAMAGE);
+    if (damaged) {
+      this.cameras.main.shake(200, 0.012);
+      this.hud.updatePlayerHp(this.player.hp);
       if (this.player.isDead()) this.triggerGameOver();
     }
   }

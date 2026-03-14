@@ -9,6 +9,8 @@ export class HUD {
   private levelText: Phaser.GameObjects.Text;
   private hpLabel: Phaser.GameObjects.Text;
   private bossLabel: Phaser.GameObjects.Text;
+  private bossHpText: Phaser.GameObjects.Text;
+  private bossMaxHp = 600;
   private bossHpVisible = false;
 
   constructor(scene: Phaser.Scene, level: number) {
@@ -30,12 +32,16 @@ export class HUD {
     }).setScrollFactor(0).setDepth(10);
 
     // Boss HP bar (top-center, hidden by default)
-    this.bossLabel = scene.add.text(GAME_WIDTH / 2, 14, 'BOSS', {
-      fontSize: '13px', color: '#ff8800', fontFamily: 'monospace', fontStyle: 'bold',
+    this.bossLabel = scene.add.text(GAME_WIDTH / 2, 12, 'BOSS', {
+      fontSize: '14px', color: '#ff8800', fontFamily: 'monospace', fontStyle: 'bold',
     }).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(10).setVisible(false);
 
-    this.bossHpBar = new HealthBar(scene, GAME_WIDTH / 2 - 125, 25, 250, 12, 600, 0xff4400, 0xcc0000);
+    this.bossHpBar = new HealthBar(scene, GAME_WIDTH / 2 - 150, 28, 300, 18, 600, 0xff4400, 0xcc0000);
     this.bossHpBar.setVisible(false);
+
+    this.bossHpText = scene.add.text(GAME_WIDTH / 2, 28, '', {
+      fontSize: '11px', color: '#ffffff', fontFamily: 'monospace',
+    }).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(12).setVisible(false);
   }
 
   updatePlayerHp(hp: number) {
@@ -51,21 +57,27 @@ export class HUD {
   }
 
   showBossBar(maxHp: number) {
+    this.bossMaxHp = maxHp;
     this.bossHpVisible = true;
     this.bossLabel.setVisible(true);
     this.bossHpBar.setVisible(true);
-    // Reinit with correct max
-    this.bossHpBar.update(maxHp); // full bar
+    this.bossHpText.setVisible(true);
+    this.bossHpBar.update(maxHp);
+    this.bossHpText.setText(`${maxHp} / ${maxHp}`);
   }
 
   updateBossHp(hp: number) {
-    if (this.bossHpVisible) this.bossHpBar.update(hp);
+    if (!this.bossHpVisible) return;
+    const clamped = Math.max(0, hp);
+    this.bossHpBar.update(clamped);
+    this.bossHpText.setText(`${clamped} / ${this.bossMaxHp}`);
   }
 
   hideBossBar() {
     this.bossHpVisible = false;
     this.bossLabel.setVisible(false);
     this.bossHpBar.setVisible(false);
+    this.bossHpText.setVisible(false);
   }
 
   destroy() {
@@ -75,5 +87,6 @@ export class HUD {
     this.levelText.destroy();
     this.hpLabel.destroy();
     this.bossLabel.destroy();
+    this.bossHpText.destroy();
   }
 }
