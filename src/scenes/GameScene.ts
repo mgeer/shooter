@@ -37,7 +37,6 @@ export class GameScene extends Phaser.Scene {
   private leftStick!: VirtualJoystick;
   private rightStick!: VirtualJoystick;
   private reloadBtn!: Phaser.GameObjects.Arc;
-  private reloadBtnLabel!: Phaser.GameObjects.Text;
   private fireCooldown = 0;
 
   // Weapon & magazine
@@ -319,11 +318,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   // ─── Shooting ─────────────────────────────────────────────
-
-  private firePlayerBullet(targetX: number, targetY: number) {
-    const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, targetX, targetY);
-    this.firePlayerBulletByAngle(angle);
-  }
 
   private firePlayerBulletByAngle(baseAngle: number) {
     const { bulletCount, spreadAngle, damage, bulletColor } = this.weapon;
