@@ -8,6 +8,7 @@ import { VictoryScene } from './scenes/VictoryScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
+  parent: 'game',
   backgroundColor: '#111122',
   scale: {
     mode: Phaser.Scale.EXPAND,

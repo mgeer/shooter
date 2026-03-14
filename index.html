@@ -15,17 +15,13 @@
         width: 100%;
         height: 100%;
         overflow: hidden;
-      }
-      body {
-        background: #111;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /* 避免微信/Safari 100vh 包含导航栏导致偏移 */
-        min-height: -webkit-fill-available;
+        background: #111122;
         touch-action: none;
-        /* 安全区域内边距（刘海屏/底部条） */
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      #game {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
       }
       canvas { display: block; touch-action: none; }
 
@@ -50,6 +46,7 @@
     </style>
   </head>
   <body>
+    <div id="game"></div>
     <div id="rotate-tip">
       <span>📱</span>
       请横屏游玩
