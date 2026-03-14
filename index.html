@@ -55,5 +55,15 @@
       请横屏游玩
     </div>
     <script type="module" src="/src/main.ts"></script>
+    <script>
+      // 旋转到横屏时重新加载，确保游戏以正确尺寸初始化
+      window.addEventListener('orientationchange', function () {
+        setTimeout(function () {
+          if (window.innerWidth > window.innerHeight) {
+            window.location.reload();
+          }
+        }, 300);
+      });
+    </script>
   </body>
 </html>
